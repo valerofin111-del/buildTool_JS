@@ -3,11 +3,40 @@ import os
 
 def build():
 
+    class Style:
+
+        BLACK   = '\033[30m'
+        RED     = '\033[31m'
+        GREEN   = '\033[32m'
+        YELLOW  = '\033[33m'
+        BLUE    = '\033[34m'
+        MAGENTA = '\033[35m'
+        CYAN    = '\033[36m'
+        WHITE   = '\033[37m'
+        
+        BG_BLACK   = '\033[40m'
+        BG_RED     = '\033[41m'
+        BG_GREEN   = '\033[42m'
+        BG_YELLOW  = '\033[43m'
+        BG_BLUE    = '\033[44m'
+        BG_MAGENTA = '\033[45m'
+        BG_CYAN    = '\033[46m'
+        BG_WHITE   = '\033[47m'
+
+        BOLD = '\033[1m'
+        UNDERLINE  = '\033[4m'
+        RESET = '\033[0m'
+
+    def style(text, color=Style.BLACK, bg=Style.BG_WHITE, bold=True, underline=False, reset=Style.RESET):
+        bold_text = Style.BOLD if bold else "" 
+        underline_text = Style.UNDERLINE if underline else ""
+        return (f"{bold_text}{underline_text}{bg}{color}{text}{reset}")
+
     def question():
         return str(input(">> ")).lower().strip()
 
 
-    print("Choose a project name")
+    print(style("Choose a project name", color=Style.MAGENTA, bg=Style.BG_WHITE))
     project_name = question()
 
 

@@ -3,6 +3,7 @@ import os
 
 def build():
 
+    # Functions
     class Style:
 
         BLACK   = '\033[30m'
@@ -28,29 +29,35 @@ def build():
         RESET = '\033[0m'
 
     def style(text, color=Style.BLACK, bg=Style.BG_WHITE, bold=True, underline=False, reset=Style.RESET):
+
         bold_text = Style.BOLD if bold else "" 
         underline_text = Style.UNDERLINE if underline else ""
         return (f"{bold_text}{underline_text}{bg}{color}{text}{reset}")
 
+
     def question():
-        return str(input(">> ")).lower().strip()
+
+            return input(style(">> ", color=Style.MAGENTA)).lower().strip()
 
 
-    print(style("Choose a project name", color=Style.MAGENTA, bg=Style.BG_WHITE))
+    # Project name
+    print(style("Choose a project name", color=Style.CYAN))
     project_name = question()
 
+    # Pm
+    print(style("\ncreate with npm or bun? (q/w/e/r)\n", color=Style.CYAN))
 
-    print("create with npm or bun? (q/w/e/r)")
-    print("npm - q")
-    print("yarn - w")
-    print("pnpm - e")
-    print("bun - r")
+    print(style("npm / q", color=Style.MAGENTA))
+    print(style("yarn / w", color=Style.MAGENTA))
+    print(style("pnpm / e", color=Style.MAGENTA))
+    print(style("bun / r\n", color=Style.MAGENTA))
+
     package_manager = question()
 
     if (package_manager == "q"):
         package_manager = "npm"
     elif (package_manager == "w"):
-        package_manager == "yarn"
+        package_manager = "yarn"
     elif (package_manager == "e"):
         package_manager = "pnpm"
     elif (package_manager == "r"):
@@ -58,95 +65,147 @@ def build():
     else:
         package_manager = "npm"
 
-
     install_command = "add"
     if (package_manager == "npm"):
         install_command = "install"
 
+    pm_install = f"{package_manager} install" 
 
-    project_framework = ""
+    add_lib = f"{package_manager} {install_command}"
 
-    if (package_manager != "bun"):
+    # Framework choice
+    print(style("\nChoose a framework (q/w)", color=Style.CYAN))
 
-        print("Choose a framework (q/w)")
-        print("React - q")
-        print("Vue - w")
-        project_framework = question()
+    print(style("React / q", color=Style.BLUE))
+    print(style("Vue / w\n", color=Style.GREEN))
 
-        if (project_framework == "q"):
-            project_framework = "react"
-        elif (project_framework == "w"):
-            project_framework = "vue"
+    project_framework = question()
 
+    if (project_framework == "q"):
+        project_framework = "react"
+    elif (project_framework == "w"):
+        project_framework = "vue"
 
-        print("Add TypeScript? (y/n)")
-        typescript = question()
-
-        if (typescript == "y"):
-            template = project_framework + "-ts"
-
-
-        bash.run(f"{package_manager} create vite@latest {project_name} -- --template {template} --yes", shell=True)
-        os.chdir(project_name)
-
-    elif (package_manager == "bun"):
-
-        bash.run(f"bun create vite@latest {project_name}", shell=True) 
-        os.chdir(project_name)
-
-
-    add_lib = package_manager, install_command
-
+    # React build
     if (project_framework == "react"):
 
-        print("Add react-router-dom? (y/n)")
+        index_html =    f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{project_name}</title>
+</head>
+    <body>
+        <div id="root"></div>
+            <script type="module" src="./Init.jsx"></script>
+    </body>
+</html>"""
+        
+        vite_config =    """import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+    plugins: [react()],
+})"""
+        
+        package_json =  f"""{{"name": "{project_name}",
+"private": true,
+"version": "0.0.0",
+"type": "module",
+"scripts": {{
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+}},
+"dependencies": {{
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+}},
+"devDependencies": {{
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@vitejs/plugin-react": "^4.0.0",
+    "vite": "^4.4.0"
+}}
+}}"""
+        
+        init_jsx =       """import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App.jsx'
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+    <React.StrictMode>
+        <App />
+    </React.StrictMode>,
+)"""
+        
+        app_jsx =       f"""import React from 'react'
+
+var App = function () {{
+    return (
+        <>{project_name}</>
+    )
+}}
+
+export default App"""
+
+        files = {
+            "index.html": index_html,
+            "vite.config.js": vite_config,
+            "package.json": package_json,
+            "Init.jsx": init_jsx,
+            "App.jsx": app_jsx
+        }
+
+        project_path = os.path.abspath(project_name)
+        os.makedirs(project_path, exist_ok=True)
+
+        for filename, content in files.items():
+
+            script = f"cat <<'EOF' > {filename}\n{content}\nEOF"
+            bash.run(script, shell=True, cwd=project_path)
+        
+        bash.run(pm_install, shell=True, cwd=project_path)
+
+
+        print(style("\nAdd react-router-dom? (y/n)", color=Style.CYAN))
+
         react_router_dom = question()
 
-        print("Add state manager? (q/w/n)")
-        print("Zustand - q")
-        print("Jotai - w")
-        print("no - n")
-        state_manager = question()
-
-        print("Add React Hook Form? (y/n)")
-        react_hook_form = question()
-
-        print("Add Tanstack Query? (y/n)")
-        tanstack_query = question()
-
-        zod = "n"
-        if (typescript == "y"):
-            print("Add Zod? (y/n)")
-            zod = question()
-        
-        if (state_manager == "q"):
-            bash.run([add_lib, "zustand@latest"])
-        elif (state_manager == "w"):
-            bash.run([add_lib, "jotai@latest"])
-
         if (react_router_dom == "y"):
-            bash.run([add_lib, "react-router-dom@latest"])
 
-        if (react_hook_form == "y"):
-            bash.run([add_lib, "react-hook-form@latest"])
+            bash.run(f"{add_lib} react-router-dom@latest", shell=True, cwd=project_path)
 
-            if (zod == "y"):
-                bash.run([add_lib, "@hookform/resolvers@latest"])
-        
-        if (zod == "y"):
-            bash.run([add_lib, "zod@latest"])
+        print(style("\nAdd Sass? (y/n)", color=Style.CYAN))
 
-        if (tanstack_query == "y"):
-            bash.run([add_lib, "@tanstack/react-query@latest"])
 
+        sass = question()
+
+        if (sass == "y"):
+
+            bash.run(f"{add_lib} -g sass", shell=True, cwd=project_path)
+
+
+    # Vue build
     elif (project_framework == "vue"):
 
+        bash.run()
+
         print("Add vue-router? (y/n)")
+
         vue_router = question()
 
         if (vue_router == "y"):
-            bash.run([add_lib, "vue-router@latest"])
 
+            bash.run(f"{add_lib} react-router-dom@latest", shell=True, cwd=project_path)
+
+
+        sass = question()
+
+        if (sass == "y"):
+
+            bash.run(f"{add_lib} -g sass", shell=True, cwd=project_path)
 
 if __name__ == "__main__":
 

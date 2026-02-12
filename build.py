@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import subprocess as bash
 import os
 
@@ -28,6 +30,7 @@ def build():
         UNDERLINE  = '\033[4m'
         RESET = '\033[0m'
 
+
     def style(text, color=Style.BLACK, bg=Style.BG_WHITE, bold=True, underline=False, reset=Style.RESET):
 
         bold_text = Style.BOLD if bold else "" 
@@ -45,12 +48,12 @@ def build():
     project_name = question()
 
     # Pm
-    print(style("\ncreate with npm or bun? (q/w/e/r)\n", color=Style.CYAN))
+    print(style("\ncreate with npm or bun? (q/w/e/r)", color=Style.CYAN))
 
     print(style("npm / q", color=Style.MAGENTA))
     print(style("yarn / w", color=Style.MAGENTA))
     print(style("pnpm / e", color=Style.MAGENTA))
-    print(style("bun / r\n", color=Style.MAGENTA))
+    print(style("bun / r", color=Style.MAGENTA))
 
     package_manager = question()
 
@@ -77,7 +80,7 @@ def build():
     print(style("\nChoose a framework (q/w)", color=Style.CYAN))
 
     print(style("React / q", color=Style.BLUE))
-    print(style("Vue / w\n", color=Style.GREEN))
+    print(style("Vue / w", color=Style.GREEN))
 
     project_framework = question()
 
@@ -170,16 +173,14 @@ export default App"""
 
 
         print(style("\nAdd react-router-dom? (y/n)", color=Style.CYAN))
-
         react_router_dom = question()
 
         if (react_router_dom == "y"):
 
             bash.run(f"{add_lib} react-router-dom@latest", shell=True, cwd=project_path)
 
+
         print(style("\nAdd Sass? (y/n)", color=Style.CYAN))
-
-
         sass = question()
 
         if (sass == "y"):
@@ -192,8 +193,7 @@ export default App"""
 
         bash.run()
 
-        print("Add vue-router? (y/n)")
-
+        print(style("Add vue-router? (y/n)", color=Style.CYAN))
         vue_router = question()
 
         if (vue_router == "y"):
@@ -201,6 +201,7 @@ export default App"""
             bash.run(f"{add_lib} react-router-dom@latest", shell=True, cwd=project_path)
 
 
+        print(style("\nAdd Sass? (y/n)", color=Style.CYAN))
         sass = question()
 
         if (sass == "y"):

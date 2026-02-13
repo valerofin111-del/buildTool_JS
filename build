@@ -44,7 +44,6 @@ def build():
 
             return input(style(">> ", color=Style.MAGENTA)).lower().strip()
 
-
     # Project name
     print(style("Choose a project name", color=Style.CYAN))
     project_name = question()
@@ -69,14 +68,6 @@ def build():
         package_manager = "bun"
     else:
         package_manager = "npm"
-
-    install_command = "add"
-    if (package_manager == "npm"):
-        install_command = "install"
-
-    pm_install = f"{package_manager} install" 
-
-    add_lib = f"{package_manager} {install_command}"
 
     # Framework choice
     print(style("\nChoose a framework (q/w)", color=Style.CYAN))
@@ -105,11 +96,33 @@ def build():
             script = f"cat <<'EOF' > {filename}\n{content}\nEOF"
             bash.run(script, shell=True, cwd=project_path)
         
-        bash.run(pm_install, shell=True, cwd=project_path)
+        bash.run(f"{package_manager} install", shell=True, cwd=project_path)
 
 
     # React build
     if (project_framework == "react"):
+
+        # Add libs
+        print(style("\nAdd react-router-dom? (y/n)", color=Style.CYAN))
+        react_router_dom = question()
+
+        print(style("\nAdd Sass? (y/n)", color=Style.CYAN))
+        sass = question()
+
+
+        if (react_router_dom == "y"):
+            
+            react_router_dom = ',\n    "react-router-dom": "^7.13.0"'
+        else:
+            react_router_dom = ''
+
+
+        if (sass == "y"):
+
+            sass = ',\n    "sass-embedded": "^1.97.3"'
+        else:
+            sass = ''
+
 
         # Files for React project
         index_html = f"""<!DOCTYPE html>
@@ -143,13 +156,13 @@ export default defineConfig({
 }},
 "dependencies": {{
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0"{react_router_dom}
 }},
 "devDependencies": {{
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "@vitejs/plugin-react": "^4.0.0",
-    "vite": "^4.4.0"
+    "vite": "^4.4.0"{sass}
 }}
 }}"""
         
@@ -210,25 +223,30 @@ dist-ssr
         build_files(files)
 
 
+    # Vue build
+    elif (project_framework == "vue"):
+
         # Add libs
-        print(style("\nAdd react-router-dom? (y/n)", color=Style.CYAN))
-        react_router_dom = question()
+        print(style("\nAdd vue-router? (y/n)", color=Style.CYAN))
+        vue_router = question()
 
         print(style("\nAdd Sass? (y/n)", color=Style.CYAN))
         sass = question()
 
 
-        if (react_router_dom == "y"):
+        if (vue_router == "y"):
+            
+            vue_router = ',\n    "vue-router": "^5.0.1"'
+        else:
+            vue_router = ''
 
-            bash.run(f"{add_lib} react-router-dom@latest", shell=True, cwd=project_path)
 
         if (sass == "y"):
 
-            bash.run(f"{add_lib} -g sass", shell=True, cwd=project_path)
+            sass = ',\n    "sass-embedded": "^1.97.3"'
+        else:
+            sass = ''
 
-
-    # Vue build
-    elif (project_framework == "vue"):
 
         # Files for Vue project
         index_html =    f"""<!DOCTYPE html>
@@ -266,12 +284,12 @@ export default defineConfig({{
     "preview": "vite preview"
 }},
 "dependencies": {{
-    "vue": "^3.5.27"
+    "vue": "^3.5.27"{vue_router}
 }},
 "devDependencies": {{
     "@vitejs/plugin-vue": "^6.0.3",
     "vite": "^7.3.1",
-    "vite-plugin-vue-devtools": "^8.0.5"
+    "vite-plugin-vue-devtools": "^8.0.5"{sass}
 }},
 "engines": {{
     "node": "^20.19.0 || >=22.12.0"
@@ -332,23 +350,6 @@ coverage
         }
 
         build_files(files)
-
-        
-        # Add libs
-        print(style("Add vue-router? (y/n)", color=Style.CYAN))
-        vue_router = question()
-
-        print(style("\nAdd Sass? (y/n)", color=Style.CYAN))
-        sass = question()
-
-
-        if (vue_router == "y"):
-
-            bash.run(f"{add_lib} vue-router@latest", shell=True, cwd=project_path)
-
-        if (sass == "y"):
-
-            bash.run(f"{add_lib} -g sass", shell=True, cwd=project_path)
 
 
 # Entry point

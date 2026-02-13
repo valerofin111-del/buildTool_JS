@@ -35,11 +35,12 @@ class Style:
     UNDERLINE  = '\033[4m'
     RESET = '\033[0m'
 
-def style(text, color=Style.BLACK, bg=Style.BG_WHITE, bold=True, underline=False, reset=Style.RESET):
+def style(text, color=Style.BLACK, bg=Style.BG_WHITE, bold=True, underline=False, reset=True):
 
     bold_text = Style.BOLD if bold else "" 
     underline_text = Style.UNDERLINE if underline else ""
-    return (f"{bold_text}{underline_text}{bg}{color}{text}{reset}")
+    reset_colors = Style.RESET if reset else ""
+    return (f"{bold_text}{underline_text}{bg}{color}{text}{reset_colors}")
 
 # Main function
 def build():
@@ -47,7 +48,15 @@ def build():
     # Input function
     def question():
 
-        return input(style(">> ", color=Style.MAGENTA)).lower().strip()
+        return input(style(">> ", color=Style.WHITE, bg=Style.BG_BLACK, reset=False)).lower().strip()
+
+    # Side
+    print(style('Choose (q/w)', color=Style.CYAN))
+
+    print(style('Frontend / q', color=Style.MAGENTA))
+    print(style('Backend / w', color=Style.MAGENTA))
+
+    side = question()
 
     # Project name
     print(style("Choose a project name", color=Style.CYAN))
@@ -55,7 +64,7 @@ def build():
     project_name = question()
 
     # Pm
-    print(style("\ncreate with npm or bun? (q/w/e/r)", color=Style.CYAN))
+    print(style("\nChoose pm (q/w/e/r)", color=Style.CYAN))
 
     print(style("npm / q", color=Style.MAGENTA))
     print(style("yarn / w", color=Style.MAGENTA))
@@ -83,66 +92,69 @@ def build():
     else:
         package_manager = "npm"
 
-    # Framework choice
-    print(style("\nChoose a framework (q/w)", color=Style.CYAN))
+    # Frontend build
+    if (side == 'q'):
 
-    print(style("React / q", color=Style.BLUE))
-    print(style("Vue / w", color=Style.GREEN))
+        # Framework choice
+        print(style("\nChoose a framework (q/w)", color=Style.CYAN))
 
-    project_framework = question()
+        print(style("React / q", color=Style.BLUE))
+        print(style("Vue / w", color=Style.GREEN))
 
-    if (project_framework == "q"):
+        project_framework = question()
 
-        project_framework = "react"
+        if (project_framework == "q"):
 
-    elif (project_framework == "w"):
+            project_framework = "react"
 
-        project_framework = "vue"
+        elif (project_framework == "w"):
 
-    # Create directory
-    project_path = os.path.abspath(project_name)
-    os.makedirs(project_path, exist_ok=True)
+            project_framework = "vue"
 
-    # Build files function
-    def build_files(files):
+        # Create directory
+        project_path = os.path.abspath(project_name)
+        os.makedirs(project_path, exist_ok=True)
 
-        for filename, content in files.items():
+        # Build files function
+        def build_files(files):
 
-            script = f"cat <<'EOF' > {filename}\n{content}\nEOF"
-            bash.run(script, shell=True, cwd=project_path)
-        
-        bash.run(f"{package_manager} install", shell=True, cwd=project_path)
+            for filename, content in files.items():
 
-    # React build
-    if (project_framework == "react"):
-
-        # Add libs
-        print(style("\nAdd react-router-dom? (y/n)", color=Style.CYAN))
-
-        react_router_dom = question()
-
-        print(style("\nAdd Sass? (y/n)", color=Style.CYAN))
-
-        sass = question()
-
-        if (react_router_dom == "y"):
+                script = f"cat <<'EOF' > {filename}\n{content}\nEOF"
+                bash.run(script, shell=True, cwd=project_path)
             
-            react_router_dom = react_router_dom_version
+            bash.run(f"{package_manager} install", shell=True, cwd=project_path)
 
-        else:
-            react_router_dom = ''
+        # React build
+        if (project_framework == "react"):
+
+            # Add libs
+            print(style("\nAdd react-router-dom? (y/n)", color=Style.CYAN))
+
+            react_router_dom = question()
+
+            print(style("\nAdd Sass? (y/n)", color=Style.CYAN))
+
+            sass = question()
+
+            if (react_router_dom == "y"):
+                
+                react_router_dom = react_router_dom_version
+
+            else:
+                react_router_dom = ''
 
 
-        if (sass == "y"):
+            if (sass == "y"):
 
-            sass = sass_version
-            
-        else:
-            sass = ''
+                sass = sass_version
+                
+            else:
+                sass = ''
 
 
-        # Files for React project
-        index_html = f"""<!DOCTYPE html>
+            # Files for React project
+            index_html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -154,15 +166,15 @@ def build():
     <script type="module" src="./Init.jsx"></script>
 </body>
 </html>"""
-        
-        vite_config = """import { defineConfig } from 'vite'
+            
+            vite_config = """import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
     plugins: [react()],
 })"""
-        
-        package_json = f"""{{
+            
+            package_json = f"""{{
     "name": "{project_name}",
     "private": true,
     "version": "0.0.0",
@@ -183,8 +195,8 @@ export default defineConfig({
         "vite": "^4.4.0"{sass}
     }}
 }}"""
-        
-        init_jsx = """import React from 'react'
+            
+            init_jsx = """import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 
@@ -193,15 +205,15 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <App />
     </React.StrictMode>,
 )"""
-        
-        app_jsx = f"""var App = function () {{
+            
+            app_jsx = f"""var App = function () {{
     return (
         <>{project_name}</>
     )
 }}
 export default App"""
-        
-        app_jsx_router = f"""import {{ RouterProvider, createBrowserRouter }} from "react-router-dom";
+            
+            app_jsx_router = f"""import {{ RouterProvider, createBrowserRouter }} from "react-router-dom";
 var App = function () {{
 
     var routes = [
@@ -215,8 +227,8 @@ var App = function () {{
     return <RouterProvider router={{router}} />
 }}
 export default App"""
-        
-        git_ignore = f"""# Logs
+            
+            git_ignore = f"""# Logs
 logs
 *.log
 npm-debug.log*
@@ -241,59 +253,59 @@ dist-ssr
 *.sln
 *.sw?"""
 
-        app = app_jsx_router if react_router_dom == react_router_dom_version else app_jsx
+            app = app_jsx_router if react_router_dom == react_router_dom_version else app_jsx
 
-        files = {
-            "index.html": index_html,
-            "vite.config.js": vite_config,
-            "package.json": package_json,
-            "Init.jsx": init_jsx,
-            "App.jsx": app,
-            ".gitignore": git_ignore
-        }
+            files = {
+                "index.html": index_html,
+                "vite.config.js": vite_config,
+                "package.json": package_json,
+                "Init.jsx": init_jsx,
+                "App.jsx": app,
+                ".gitignore": git_ignore
+            }
 
-        build_files(files)
+            build_files(files)
 
-    # Vue build
-    elif (project_framework == "vue"):
+        # Vue build
+        elif (project_framework == "vue"):
 
-        # Add libs
-        print(style("\nAdd vue-router? (y/n)", color=Style.CYAN))
+            # Add libs
+            print(style("\nAdd vue-router? (y/n)", color=Style.CYAN))
 
-        vue_router = question()
+            vue_router = question()
 
-        print(style("\nAdd Pinia? (y/n)", color=Style.CYAN))
+            print(style("\nAdd Pinia? (y/n)", color=Style.CYAN))
 
-        pinia = question()
+            pinia = question()
 
-        print(style("\nAdd Sass? (y/n)", color=Style.CYAN))
+            print(style("\nAdd Sass? (y/n)", color=Style.CYAN))
 
-        sass = question()
+            sass = question()
 
-        if (vue_router == "y"):
+            if (vue_router == "y"):
+                
+                vue_router = vue_router_version
+
+            else:
+                vue_router = ''
+
+            if (pinia == "y"):
+
+                pinia = pinia_version
             
-            vue_router = vue_router_version
+            else:
+                pinia = ''
 
-        else:
-            vue_router = ''
+            if (sass == "y"):
 
-        if (pinia == "y"):
+                sass = sass_version
 
-            pinia = pinia_version
-        
-        else:
-            pinia = ''
-
-        if (sass == "y"):
-
-            sass = sass_version
-
-        else:
-            sass = ''
+            else:
+                sass = ''
 
 
-        # Files for Vue project
-        index_html = f"""<!DOCTYPE html>
+            # Files for Vue project
+            index_html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -305,19 +317,19 @@ dist-ssr
         <script type="module" src="./Init.js"></script>
     </body>
 </html>"""
-        
-        vite_config = f"""import {{ defineConfig }} from 'vite'
+            
+            vite_config = f"""import {{ defineConfig }} from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
 export default defineConfig({{
-  plugins: [
+plugins: [
     vue(),
     vueDevTools(),
-  ]
+]
 }})"""
 
-        package_json = f"""{{
+            package_json = f"""{{
     "name": "{project_name}",
     "version": "0.0.0",
     "private": true,
@@ -340,20 +352,20 @@ export default defineConfig({{
     }}
 }}"""
 
-        init_js = f"""import {{ createApp }} from 'vue'
+            init_js = f"""import {{ createApp }} from 'vue'
 import App from './App.vue'
 {"import router from './router.js'" if vue_router == vue_router_version else ""}
 {"import { createPinia } from 'pinia'" if pinia == pinia_version else ""}
 
 createApp(App){".use(router)" if vue_router == vue_router_version else ""}{".use(createPinia())" if pinia == pinia_version else ""}.mount('#root')"""
-        
-        app_vue = f"""<script setup></script>
+            
+            app_vue = f"""<script setup></script>
 
 <template>{project_name}</template>
 
 <style scoped></style>"""
 
-        router_js = """import { createRouter, createWebHistory } from 'vue-router'
+            router_js = """import { createRouter, createWebHistory } from 'vue-router'
 
 var router = createRouter({
 
@@ -363,7 +375,7 @@ var router = createRouter({
 export default router
 """
 
-        git_ignore = f"""# Logs
+            git_ignore = f"""# Logs
 logs
 *.log
 npm-debug.log*
@@ -396,20 +408,33 @@ coverage
 # Vite
 *.timestamp-*-*.mjs"""
 
-        files = {
-            "index.html": index_html,
-            "vite.config.js": vite_config,
-            "package.json": package_json,
-            "Init.js": init_js,
-            "App.vue": app_vue,
-            ".gitignore": git_ignore
-        }
+            files = {
+                "index.html": index_html,
+                "vite.config.js": vite_config,
+                "package.json": package_json,
+                "Init.js": init_js,
+                "App.vue": app_vue,
+                ".gitignore": git_ignore
+            }
 
-        if (vue_router == vue_router_version):
+            if (vue_router == vue_router_version):
 
-            files["router.js"] = router_js
+                files["router.js"] = router_js
 
-        build_files(files)
+            build_files(files)
+
+    # Backend build
+    elif (side == 'w'):
+
+        # Framework choice
+        print(style('Chose a framework (q/w/e)', color=Style.CYAN))
+
+        print(style('Express / q', color=Style.MAGENTA))
+        print(style('Fastify / w', color=Style.MAGENTA))
+        print(style('Hono / e', color=Style.MAGENTA))
+
+        project_framework = question()
+        
 
 # Entry point
 if __name__ == "__main__":
@@ -418,4 +443,4 @@ if __name__ == "__main__":
         build()
 
     except:
-        print(style("!!! Exit !!!", color=Style.RED))
+        print(style("!!! Exit !!!", color=Style.RED, bg=Style.BG_BLACK))

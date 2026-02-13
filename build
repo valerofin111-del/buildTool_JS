@@ -3,10 +3,12 @@
 import subprocess as bash
 import os
 
+indent = ',\n        '
 
-react_router_dom_version = ',\n    "react-router-dom": "^7.13.0"'
-vue_router_version = ',\n    "vue-router": "^5.0.1"'
-sass_version = ',\n    "sass-embedded": "^1.97.3"'
+react_router_dom_version = indent + '"react-router-dom": "^7.13.0"'
+vue_router_version = indent + '"vue-router": "^5.0.1"'
+pinia_version = indent + '"pinia": "^3.0.4"'
+sass_version =  indent + '"sass-embedded": "^1.97.3"'
 
 # Styling functionality
 class Style:
@@ -33,13 +35,11 @@ class Style:
     UNDERLINE  = '\033[4m'
     RESET = '\033[0m'
 
-
 def style(text, color=Style.BLACK, bg=Style.BG_WHITE, bold=True, underline=False, reset=Style.RESET):
 
     bold_text = Style.BOLD if bold else "" 
     underline_text = Style.UNDERLINE if underline else ""
     return (f"{bold_text}{underline_text}{bg}{color}{text}{reset}")
-
 
 # Main function
 def build():
@@ -47,10 +47,11 @@ def build():
     # Input function
     def question():
 
-            return input(style(">> ", color=Style.MAGENTA)).lower().strip()
+        return input(style(">> ", color=Style.MAGENTA)).lower().strip()
 
     # Project name
     print(style("Choose a project name", color=Style.CYAN))
+
     project_name = question()
 
     # Pm
@@ -98,11 +99,9 @@ def build():
 
         project_framework = "vue"
 
-
     # Create directory
     project_path = os.path.abspath(project_name)
     os.makedirs(project_path, exist_ok=True)
-
 
     # Build files function
     def build_files(files):
@@ -114,17 +113,17 @@ def build():
         
         bash.run(f"{package_manager} install", shell=True, cwd=project_path)
 
-
     # React build
     if (project_framework == "react"):
 
         # Add libs
         print(style("\nAdd react-router-dom? (y/n)", color=Style.CYAN))
+
         react_router_dom = question()
 
         print(style("\nAdd Sass? (y/n)", color=Style.CYAN))
-        sass = question()
 
+        sass = question()
 
         if (react_router_dom == "y"):
             
@@ -152,7 +151,7 @@ def build():
 </head>
 <body>
     <div id="root"></div>
-        <script type="module" src="./Init.jsx"></script>
+    <script type="module" src="./Init.jsx"></script>
 </body>
 </html>"""
         
@@ -255,18 +254,21 @@ dist-ssr
 
         build_files(files)
 
-
     # Vue build
     elif (project_framework == "vue"):
 
         # Add libs
         print(style("\nAdd vue-router? (y/n)", color=Style.CYAN))
+
         vue_router = question()
 
-        print(style("\nAdd Sass? (y/n)", color=Style.CYAN))
-        sass = question()
+        print(style("\nAdd Pinia? (y/n)", color=Style.CYAN))
 
-        
+        pinia = question()
+
+        print(style("\nAdd Sass? (y/n)", color=Style.CYAN))
+
+        sass = question()
 
         if (vue_router == "y"):
             
@@ -274,6 +276,13 @@ dist-ssr
 
         else:
             vue_router = ''
+
+        if (pinia == "y"):
+
+            pinia = pinia_version
+        
+        else:
+            pinia = ''
 
         if (sass == "y"):
 
@@ -293,7 +302,7 @@ dist-ssr
 </head>
     <body>
         <div id="root"></div>
-            <script type="module" src="./Init.js"></script>
+        <script type="module" src="./Init.js"></script>
     </body>
 </html>"""
         
@@ -319,7 +328,7 @@ export default defineConfig({{
         "preview": "vite preview"
     }},
     "dependencies": {{
-        "vue": "^3.5.27"{vue_router}
+        "vue": "^3.5.27"{vue_router}{pinia}
     }},
     "devDependencies": {{
         "@vitejs/plugin-vue": "^6.0.3",
@@ -334,8 +343,9 @@ export default defineConfig({{
         init_js = f"""import {{ createApp }} from 'vue'
 import App from './App.vue'
 {"import router from './router.js'" if vue_router == vue_router_version else ""}
+{"import { createPinia } from 'pinia'" if pinia == pinia_version else ""}
 
-createApp(App){".use(router)" if vue_router == vue_router_version else ""}.mount('#root')"""
+createApp(App){".use(router)" if vue_router == vue_router_version else ""}{".use(createPinia())" if pinia == pinia_version else ""}.mount('#root')"""
         
         app_vue = f"""<script setup></script>
 
@@ -400,7 +410,6 @@ coverage
             files["router.js"] = router_js
 
         build_files(files)
-
 
 # Entry point
 if __name__ == "__main__":

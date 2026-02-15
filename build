@@ -3,12 +3,20 @@
 import subprocess as bash
 import os
 
+indent_first = '\n        '
 indent = ',\n        '
 
+# Frontend libs versions
 react_router_dom_version = indent + '"react-router-dom": "^7.13.0"'
 vue_router_version = indent + '"vue-router": "^5.0.1"'
 pinia_version = indent + '"pinia": "^3.0.4"'
 sass_version =  indent + '"sass-embedded": "^1.97.3"'
+
+# Backend libs versions
+express_version = indent_first + '"express": "^4.19.0"'
+fastify_version = indent_first + '"fastify": "^4.26.0"'
+hono_version = indent_first + '"hono": "^4.0.0"' + indent + '"@hono/node-server": "^1.8.0"'
+nodemon_version = indent_first + '"nodemon": "^3.1.0"'
 
 # Styling functionality
 class Style:
@@ -40,102 +48,123 @@ def style(text, color=Style.BLACK, bg=Style.BG_WHITE, bold=True, underline=False
     bold_text = Style.BOLD if bold else "" 
     underline_text = Style.UNDERLINE if underline else ""
     reset_colors = Style.RESET if reset else ""
+
     return (f"{bold_text}{underline_text}{bg}{color}{text}{reset_colors}")
 
 # Main function
 def build():
 
+    # Build files function
+    def build_files(files):
+
+        for filename, content in files.items():
+
+            script = f"cat <<'EOF' > {filename}\n{content}\nEOF"
+            bash.run(script, shell=True, cwd=project_path)
+        
+        bash.run(f"{package_manager} install", shell=True, cwd=project_path)
+    
     # Input function
-    def question():
+    def answer():
 
         return input(style(">> ", color=Style.WHITE, bg=Style.BG_BLACK, reset=False)).lower().strip()
 
+    # Print functions        
+    def question(text : str):
+
+        return print(style(f"\n{text}", color=Style.CYAN))
+
+    def advice(text : str):
+
+        return print(style(f"{text}", color=Style.GREEN, bg=Style.BG_BLACK))
+
     # Side
-    print(style('Choose (q/w)', color=Style.CYAN))
+    question('Choose (q/w)')
 
     print(style('Frontend / q', color=Style.MAGENTA))
     print(style('Backend / w', color=Style.MAGENTA))
 
-    side = question()
+    side = answer()
+
+    if (side == "q"):
+
+        side = "frontend"
+
+    else:
+        side = "backend"
 
     # Project name
-    print(style("Choose a project name", color=Style.CYAN))
+    question("Choose a project name")
 
-    project_name = question()
+    project_name = answer()
 
     # Pm
-    print(style("\nChoose pm (q/w/e/r)", color=Style.CYAN))
+    question("Choose pm (q/w/e/r)")
 
     print(style("npm / q", color=Style.MAGENTA))
     print(style("yarn / w", color=Style.MAGENTA))
     print(style("pnpm / e", color=Style.MAGENTA))
     print(style("bun / r", color=Style.MAGENTA))
 
-    package_manager = question()
+    package_manager = answer()
 
-    if (package_manager == "q"):
+    match (package_manager):
 
-        package_manager = "npm"
+        case "q":
 
-    elif (package_manager == "w"):
+            package_manager = "npm"
 
-        package_manager = "yarn"
+        case "w":
 
-    elif (package_manager == "e"):
+            package_manager = "yarn"
 
-        package_manager = "pnpm"
+        case "e":
 
-    elif (package_manager == "r"):
+            package_manager = "pnpm"
 
-        package_manager = "bun"
+        case "r":
 
-    else:
-        package_manager = "npm"
+            package_manager = "bun"
+
+        case _:
+            package_manager = "npm"
+
+    # Create directory
+    project_path = os.path.abspath(project_name)
+    bash.run(f"mkdir {project_name}", shell=True)
 
     # Frontend build
-    if (side == 'q'):
+    if (side == 'frontend'):
 
         # Framework choice
-        print(style("\nChoose a framework (q/w)", color=Style.CYAN))
+        question("Choose a framework (q/w)")
 
         print(style("React / q", color=Style.BLUE))
         print(style("Vue / w", color=Style.GREEN))
 
-        project_framework = question()
+        project_framework = answer()
 
-        if (project_framework == "q"):
+        match (project_framework):
 
-            project_framework = "react"
+            case "q": 
 
-        elif (project_framework == "w"):
+                project_framework = "react"
 
-            project_framework = "vue"
+            case "w":
 
-        # Create directory
-        project_path = os.path.abspath(project_name)
-        os.makedirs(project_path, exist_ok=True)
-
-        # Build files function
-        def build_files(files):
-
-            for filename, content in files.items():
-
-                script = f"cat <<'EOF' > {filename}\n{content}\nEOF"
-                bash.run(script, shell=True, cwd=project_path)
-            
-            bash.run(f"{package_manager} install", shell=True, cwd=project_path)
+                project_framework = "vue"
 
         # React build
         if (project_framework == "react"):
 
             # Add libs
-            print(style("\nAdd react-router-dom? (y/n)", color=Style.CYAN))
+            question("Add react-router-dom? (y/n)")
 
-            react_router_dom = question()
+            react_router_dom = answer()
 
-            print(style("\nAdd Sass? (y/n)", color=Style.CYAN))
+            question("Add Sass? (y/n)")
 
-            sass = question()
+            sass = answer()
 
             if (react_router_dom == "y"):
                 
@@ -253,7 +282,7 @@ dist-ssr
 *.sln
 *.sw?"""
 
-            app = app_jsx_router if react_router_dom == react_router_dom_version else app_jsx
+            app = app_jsx_router if (react_router_dom) else app_jsx
 
             files = {
                 "index.html": index_html,
@@ -270,17 +299,17 @@ dist-ssr
         elif (project_framework == "vue"):
 
             # Add libs
-            print(style("\nAdd vue-router? (y/n)", color=Style.CYAN))
+            question("Add vue-router? (y/n)")
 
-            vue_router = question()
+            vue_router = answer()
 
-            print(style("\nAdd Pinia? (y/n)", color=Style.CYAN))
+            question("Add Pinia? (y/n)")
 
-            pinia = question()
+            pinia = answer()
 
-            print(style("\nAdd Sass? (y/n)", color=Style.CYAN))
+            question("Add Sass? (y/n)")
 
-            sass = question()
+            sass = answer()
 
             if (vue_router == "y"):
                 
@@ -354,10 +383,10 @@ plugins: [
 
             init_js = f"""import {{ createApp }} from 'vue'
 import App from './App.vue'
-{"import router from './router.js'" if vue_router == vue_router_version else ""}
-{"import { createPinia } from 'pinia'" if pinia == pinia_version else ""}
+{"import router from './router.js'" if (vue_router) else ""}
+{"import { createPinia } from 'pinia'" if (pinia) else ""}
 
-createApp(App){".use(router)" if vue_router == vue_router_version else ""}{".use(createPinia())" if pinia == pinia_version else ""}.mount('#root')"""
+createApp(App){".use(router)" if (vue_router) else ""}{".use(createPinia())" if (pinia) else ""}.mount('#root')"""
             
             app_vue = f"""<script setup></script>
 
@@ -417,24 +446,181 @@ coverage
                 ".gitignore": git_ignore
             }
 
-            if (vue_router == vue_router_version):
+            if (vue_router):
 
                 files["router.js"] = router_js
 
             build_files(files)
 
+        # Advice for frontend project
+        print("\n")
+
     # Backend build
-    elif (side == 'w'):
+    elif (side == 'backend'):
 
         # Framework choice
-        print(style('Chose a framework (q/w/e)', color=Style.CYAN))
+        question("Chose a framework (q/w/e)")
 
-        print(style('Express / q', color=Style.MAGENTA))
-        print(style('Fastify / w', color=Style.MAGENTA))
-        print(style('Hono / e', color=Style.MAGENTA))
+        print(style('Vanilla / q', color=Style.YELLOW))
+        print(style('Express / w', color=Style.YELLOW))
+        print(style('Fastify / e', color=Style.BLUE))
+        print(style('Hono / r', color=Style.MAGENTA))
 
-        project_framework = question()
-        
+        project_framework = answer()
+
+        match (project_framework):
+            
+            case "q":
+
+                dependcies = ''
+
+            case "w":
+
+                dependcies = express_version
+
+            case "e":
+
+                dependcies = fastify_version
+
+            case "r":
+
+                dependcies = hono_version
+            
+            case _:
+                dependcies = ''
+
+        # Add libs
+        question("Add nodemon? (y/n)")
+
+        nodemon = answer()
+
+        if (nodemon == "y"):
+
+            dev_script = "nodemon index.js"
+            nodemon = nodemon_version
+
+        else:
+            dev_script = "node --watch index.js"
+            nodemon = ''
+
+        # Files for backend project
+        index_js_vanilla = f"""import http from 'node:http';
+var server = http.createServer((req, res) => {{
+    res.writeHead(200, {{ 'Content-Type': 'text/plain; charset=utf-8' }});
+
+    if (req.url === '/') {{
+        res.end('{project_name}')
+}});
+
+server.listen(3000, () => {{
+    console.log(`{project_name}: http://localhost:3000`);
+}});"""
+
+        index_js_express = f"""import express from 'express';
+var app = express();
+
+app.get('/', (req, res) => res.send('{project_name}'));
+
+app.listen(3000, () => console.log('{project_name}: http://localhost:3000'));"""
+
+        index_js_fastify = f"""import Fastify from 'fastify';
+var app = Fastify();
+
+app.get('/', async () => '{project_name}');
+
+app.listen({{ port: 3000 }}, () => console.log('{project_name}: http://localhost:3000'));"""        
+
+        index_js_hono = f"""import {{ Hono }} from 'hono';
+import {{ serve }} from '@hono/node-server';
+var app = new Hono();
+
+app.get('/', (c) => c.text('{project_name}'));
+
+serve(app, () => console.log('{project_name}: http://localhost:3000'));"""
+
+        package_json = f"""{{
+    "name": "{project_name}",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {{
+        "dev": "{dev_script}"
+    }},
+    "dependencies": {{
+        {dependcies} 
+    }},
+    "devDependencies": {{
+        {nodemon}
+    }},
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "type": "module"
+}}"""
+
+        match (project_framework):
+            
+            case "q":
+
+                index_js = index_js_vanilla
+
+            case "w":
+
+                index_js = index_js_express
+
+            case "e":
+
+                index_js = index_js_fastify
+
+            case "r":
+
+                index_js = index_js_hono
+
+            case _:
+                index_js = index_js_vanilla
+
+        files = {
+            "index.js": index_js,
+            "package.json": package_json
+        }
+
+        build_files(files)
+
+        bash.run("mkdir routes", shell=True, cwd=project_path)
+        bash.run("mkdir controllers", shell=True, cwd=project_path)
+
+        # Advice for backend project
+        print("\n")
+
+        if (nodemon):
+
+            match (package_manager):
+
+                case "npm":
+
+                    advice("npm install -g nodemon")
+
+                case "yarn":
+
+                    advice("yarn global add nodemon")
+
+                case "pnpm":
+
+                    advice("pnpm add -g nodemon")
+
+                case "bun":
+
+                    advice("bun add -g nodemon")
+
+    # Advice
+    if (package_manager == "npm"):
+
+        run_script = "npm run dev"
+    else:
+        run_script = f"{package_manager} dev"
+
+    advice(f"cd {project_name}")
+    advice(run_script)
 
 # Entry point
 if __name__ == "__main__":
@@ -442,5 +628,6 @@ if __name__ == "__main__":
     try:
         build()
 
-    except:
-        print(style("!!! Exit !!!", color=Style.RED, bg=Style.BG_BLACK))
+    except Exception as e:
+        # print(style("!!! Exit !!!", color=Style.RED, bg=Style.BG_BLACK))
+        print(e)

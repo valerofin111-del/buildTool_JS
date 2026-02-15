@@ -31,12 +31,6 @@ class Style:
     WHITE   = '\033[37m'
     
     BG_BLACK   = '\033[40m'
-    BG_RED     = '\033[41m'
-    BG_GREEN   = '\033[42m'
-    BG_YELLOW  = '\033[43m'
-    BG_BLUE    = '\033[44m'
-    BG_MAGENTA = '\033[45m'
-    BG_CYAN    = '\033[46m'
     BG_WHITE   = '\033[47m'
 
     BOLD = '\033[1m'
@@ -49,7 +43,7 @@ def style(text, color=Style.BLACK, bg=Style.BG_WHITE, bold=True, underline=False
     underline_text = Style.UNDERLINE if underline else ""
     reset_colors = Style.RESET if reset else ""
 
-    return (f"{bold_text}{underline_text}{bg}{color}{text}{reset_colors}")
+    return (f"{bold_text}{underline_text}{bg}{color} {text} {reset_colors}")
 
 # Main function
 def build():
@@ -61,18 +55,16 @@ def build():
 
             script = f"cat <<'EOF' > {filename}\n{content}\nEOF"
             bash.run(script, shell=True, cwd=project_path)
-        
-        bash.run(f"{package_manager} install", shell=True, cwd=project_path)
     
     # Input function
     def answer():
 
-        return input(style(">> ", color=Style.WHITE, bg=Style.BG_BLACK, reset=False)).lower().strip()
+        return input(style(">>", color=Style.WHITE, bg=Style.BG_BLACK)).lower().strip()
 
     # Print functions        
     def question(text : str):
 
-        return print(style(f"\n{text}", color=Style.CYAN))
+        return print(style(f"{text}", color=Style.CYAN))
 
     def advice(text : str):
 
@@ -128,6 +120,12 @@ def build():
 
         case _:
             package_manager = "npm"
+
+    if (package_manager == "npm"):
+
+        run_script = "npm run dev"
+    else:
+        run_script = f"{package_manager} dev"
 
     # Create directory
     project_path = os.path.abspath(project_name)
@@ -452,16 +450,15 @@ coverage
 
             build_files(files)
 
-        # Advice for frontend project
-        print("\n")
+        # Advice for frontend
 
     # Backend build
     elif (side == 'backend'):
 
         # Framework choice
-        question("Chose a framework (q/w/e)")
+        question("Chose a framework (q/w/e/r)")
 
-        print(style('Vanilla / q', color=Style.YELLOW))
+        print(style('Vanilla JS / q', color=Style.BLACK))
         print(style('Express / w', color=Style.YELLOW))
         print(style('Fastify / e', color=Style.BLUE))
         print(style('Hono / r', color=Style.MAGENTA))
@@ -509,11 +506,12 @@ var server = http.createServer((req, res) => {{
     res.writeHead(200, {{ 'Content-Type': 'text/plain; charset=utf-8' }});
 
     if (req.url === '/') {{
-        res.end('{project_name}')
+        res.end('{project_name}');
+    }}
 }});
 
 server.listen(3000, () => {{
-    console.log(`{project_name}: http://localhost:3000`);
+    console.log('http://localhost:3000');
 }});"""
 
         index_js_express = f"""import express from 'express';
@@ -521,14 +519,14 @@ var app = express();
 
 app.get('/', (req, res) => res.send('{project_name}'));
 
-app.listen(3000, () => console.log('{project_name}: http://localhost:3000'));"""
+app.listen(3000, () => console.log('http://localhost:3000'));"""
 
         index_js_fastify = f"""import Fastify from 'fastify';
 var app = Fastify();
 
 app.get('/', async () => '{project_name}');
 
-app.listen({{ port: 3000 }}, () => console.log('{project_name}: http://localhost:3000'));"""        
+app.listen({{ port: 3000 }}, () => console.log('http://localhost:3000'));"""        
 
         index_js_hono = f"""import {{ Hono }} from 'hono';
 import {{ serve }} from '@hono/node-server';
@@ -536,7 +534,7 @@ var app = new Hono();
 
 app.get('/', (c) => c.text('{project_name}'));
 
-serve(app, () => console.log('{project_name}: http://localhost:3000'));"""
+serve(app, () => console.log('http://localhost:3000'));"""
 
         package_json = f"""{{
     "name": "{project_name}",
@@ -590,8 +588,6 @@ serve(app, () => console.log('{project_name}: http://localhost:3000'));"""
         bash.run("mkdir controllers", shell=True, cwd=project_path)
 
         # Advice for backend project
-        print("\n")
-
         if (nodemon):
 
             match (package_manager):
@@ -613,13 +609,8 @@ serve(app, () => console.log('{project_name}: http://localhost:3000'));"""
                     advice("bun add -g nodemon")
 
     # Advice
-    if (package_manager == "npm"):
-
-        run_script = "npm run dev"
-    else:
-        run_script = f"{package_manager} dev"
-
     advice(f"cd {project_name}")
+    advice(f"{package_manager} install")
     advice(run_script)
 
 # Entry point
@@ -628,6 +619,6 @@ if __name__ == "__main__":
     try:
         build()
 
-    except Exception as e:
-        # print(style("!!! Exit !!!", color=Style.RED, bg=Style.BG_BLACK))
-        print(e)
+    except:
+        print()
+        print(style("!!! Exit !!!", color=Style.RED, bg=Style.BG_BLACK))

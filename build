@@ -13,9 +13,9 @@ pinia_version = indent + '"pinia": "^3.0.4"'
 sass_version =  indent + '"sass-embedded": "^1.97.3"'
 
 # Backend libs versions
-express_version = indent_first + '"express": "^4.19.0"'
-fastify_version = indent_first + '"fastify": "^4.26.0"'
-hono_version = indent_first + '"hono": "^4.0.0"' + indent + '"@hono/node-server": "^1.8.0"'
+express_version = indent + '"express": "^4.19.0"'
+fastify_version = indent + '"fastify": "^4.26.0"'
+hono_version = indent + '"hono": "^4.0.0"' + indent + '"@hono/node-server": "^1.8.0"'
 nodemon_version = indent_first + '"nodemon": "^3.1.0"'
 
 # Styling functionality
@@ -505,6 +505,10 @@ root.innerHTML = '{project_name}'"""
 
         # Files for backend project
         index_js_vanilla = f"""import http from 'node:http';
+import 'dotenv/config';
+
+var PORT = Number(process.env.PORT) || 3000;
+
 var server = http.createServer((req, res) => {{
     res.writeHead(200, {{ 'Content-Type': 'text/plain; charset=utf-8' }});
 
@@ -513,31 +517,48 @@ var server = http.createServer((req, res) => {{
     }}
 }});
 
-server.listen(3000, () => {{
-    console.log('http://localhost:3000');
+server.listen(PORT, () => {{
+    console.log(`http://localhost:${{PORT}}`);
 }});"""
 
         index_js_express = f"""import express from 'express';
+import 'dotenv/config';
+        
+var PORT = Number(process.env.PORT) || 3000;
+
 var app = express();
 
 app.get('/', (req, res) => res.send('{project_name}'));
 
-app.listen(3000, () => console.log('http://localhost:3000'));"""
+app.listen(PORT, () => console.log(`http://localhost:${{PORT}}`));"""
 
         index_js_fastify = f"""import Fastify from 'fastify';
+import 'dotenv/config';
+        
+var PORT = Number(process.env.PORT) || 3000;
+
 var app = Fastify();
 
 app.get('/', async () => '{project_name}');
 
-app.listen({{ port: 3000 }}, () => console.log('http://localhost:3000'));"""        
+app.listen({{ port: PORT }}, () => console.log(`http://localhost:${{PORT}}`));"""        
 
         index_js_hono = f"""import {{ Hono }} from 'hono';
 import {{ serve }} from '@hono/node-server';
+import 'dotenv/config';
+
+var PORT = Number(process.env.PORT) || 3000;
+
 var app = new Hono();
 
 app.get('/', (c) => c.text('{project_name}'));
 
-serve(app, () => console.log('http://localhost:3000'));"""
+serve({{
+  fetch: app.fetch,
+  port: PORT
+}}, (info) => {{
+  console.log(`http://localhost:${{info.port}}`)
+}});"""
 
         package_json = f"""{{
     "name": "{project_name}",
@@ -548,16 +569,19 @@ serve(app, () => console.log('http://localhost:3000'));"""
         "dev": "{dev_script}"
     }},
     "dependencies": {{
-        {dependcies} 
+        "dotenv": "^16.4.7"{dependcies} 
     }},
-    "devDependencies": {{
-        {nodemon}
+    "devDependencies": {{{nodemon}
     }},
     "keywords": [],
     "author": "",
     "license": "ISC",
     "type": "module"
 }}"""
+        
+        env = f"""PORT=''
+DATABASE_URL=''
+API_KEY=''"""
 
         match (project_framework):
             
@@ -583,6 +607,7 @@ serve(app, () => console.log('http://localhost:3000'));"""
         files = {
             "index.js": index_js,
             "package.json": package_json,
+            ".env": env,
             '.gitignore': git_ignore
         }
 

@@ -30,12 +30,12 @@ def style(text, color=Style.BLACK, bg=Style.BG_WHITE, bold=True, underline=False
     return (f"{bold_text}{underline_text}{bg}{color} {text} {reset_colors}")
 
 # Build files function
-def build_files(files, project_path):
+def build_files(files, path):
 
     for filename, content in files.items():
 
         script = f"cat <<'EOF' > {filename}\n{content}\nEOF"
-        bash.run(script, shell=True, cwd=project_path)
+        bash.run(script, shell=True, cwd=path)
 
 # Input function
 def answer():
@@ -50,6 +50,10 @@ def question(text : str):
 def advice(text : str):
 
     return print(style(f"{text}", color=Style.GREEN, bg=Style.BG_BLACK))
+
+def error(text : str):
+
+    return print(style(f"{text}", color=Style.RED, bg=Style.BG_BLACK))
 
 # .gitignore file
 git_ignore = f"""logs

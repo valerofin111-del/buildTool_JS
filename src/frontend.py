@@ -58,7 +58,6 @@ def frontend_build(project_name, project_path):
         else:
             sass = ''
 
-
         # Files for React project
         index_html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -183,7 +182,6 @@ export default Main"""
 
         else:
             sass = ''
-
 
         # Files for Vue project
         index_html = f"""<!DOCTYPE html>

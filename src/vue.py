@@ -28,3 +28,4 @@ def vue_build(component_name):
     }
 
     build_files(files, component_path)
+    success(component_name = component_name)

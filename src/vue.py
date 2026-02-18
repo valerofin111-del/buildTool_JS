@@ -1,0 +1,1 @@
+# Component generation for Vue

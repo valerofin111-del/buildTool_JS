@@ -1,5 +1,4 @@
 import subprocess as bash
-import os
 from tools import *
 
 # Backend libs versions

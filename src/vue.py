@@ -1,7 +1,7 @@
 import os
 from tools import *
 
-def vue_build(component_name):
+def vue_build(component_name : str):
 
     component_name = component_name.strip().capitalize()
 

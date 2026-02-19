@@ -13,6 +13,7 @@ from tools import *
 from setup import *
 from frontend import *
 from backend import *
+from mvc import *
 from jsx import *
 from vue import *
 
@@ -26,6 +27,8 @@ def build():
 
     flags.add_argument('-f', '--frontend', action='store_true', help="Generate frontend project")
     flags.add_argument('-b', '--backend', action='store_true', help="Generate backend project")
+
+    flags.add_argument('-m', '--mvc', action='store_true', help="Create a route && controller")
 
     flags.add_argument('-j', '--jsx', action='store_true', help="Create a React component ")
     flags.add_argument('-v', '--vue', action='store_true', help="Create a Vue component ")
@@ -66,6 +69,15 @@ def build():
             
             backend_build(project_name, project_path)
             success(project_name, package_manager='<pm>', run_script='<pm> run dev')
+
+        case _ if (args.mvc):
+
+            if (not args.name):
+
+                error("!!! ADD ROUTE/CONTROLLER NAME !!!")
+                sys.exit(1)
+
+            mvc_build(args.name)
 
         case _ if (args.jsx):
 

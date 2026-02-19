@@ -48,23 +48,11 @@ def question(text : str):
     return print(style(f"{text}", color=Style.CYAN))
 
 
-def success(project_name = False, package_manager = False, run_script = False, component_name = False):
+def success(project_name = False, package_manager = False, run_script = False):
 
-    if (project_name):
-
-        print(style(f"cd {project_name}", color=Style.GREEN, bg=Style.BG_BLACK))
-
-    if (package_manager):
-
-        print(style(f"{package_manager} install", color=Style.GREEN, bg=Style.BG_BLACK))
-
-    if (run_script):
-
-        print(style(run_script, color=Style.GREEN, bg=Style.BG_BLACK))
-
-    if (component_name):
-
-        print(style(f'"{component_name}" created', color=Style.GREEN, bg=Style.BG_BLACK))
+    print(style(f"cd {project_name}", color=Style.GREEN, bg=Style.BG_BLACK))
+    print(style(f"{package_manager} install", color=Style.GREEN, bg=Style.BG_BLACK))
+    print(style(run_script, color=Style.GREEN, bg=Style.BG_BLACK))
 
 
 def error(text : str):

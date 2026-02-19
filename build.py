@@ -50,8 +50,7 @@ def build():
             bash.run(f"mkdir {project_name}", shell=True)
 
             frontend_build(project_name, project_path)
-
-            success(project_name)
+            success(project_name, package_manager='<pm>', run_script='<pm> run dev')
 
         case _ if (args.backend):
 
@@ -66,8 +65,7 @@ def build():
             bash.run(f"mkdir {project_name}", shell=True)
             
             backend_build(project_name, project_path)
-
-            success(project_name)
+            success(project_name, package_manager='<pm>', run_script='<pm> run dev')
 
         case _ if (args.jsx):
 
@@ -105,6 +103,17 @@ if __name__ == "__main__":
     try:
         build()
 
-    except:
-        print()
+    except SystemExit as e:
+
+        sys.exit(e.code)
+
+    except KeyboardInterrupt:
+            
+        print()    
         error("!!! EXIT !!!")
+        sys.exit(130)
+
+    except Exception:
+
+        error("!!! ERROR !!!")
+        sys.exit(1)

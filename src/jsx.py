@@ -29,4 +29,4 @@ export default {component_name};"""
     }
 
     build_files(files, component_path)
-    success(component_name = component_name)
+    print(style(f'"{component_name}" created!', color=Style.BLUE , bg=''))

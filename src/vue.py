@@ -28,4 +28,4 @@ def vue_build(component_name):
     }
 
     build_files(files, component_path)
-    success(component_name = component_name)
+    print(style(f'"{component_name}" created!', color=Style.GREEN , bg=''))

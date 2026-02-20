@@ -29,4 +29,4 @@ export default {component_name};"""
     }
 
     build_files(files, component_path)
-    print(style(f'"{component_name}" created!', color=Style.BLUE , bg=''))
+    print(style(f'"{component_name}" created at {component_path}/{component_name}.jsx', color=Style.BLUE , bg=''))

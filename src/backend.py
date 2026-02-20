@@ -42,7 +42,7 @@ def backend_build(project_name, project_path):
     # Files for backend project
 
     # Vanilla Node.js
-    vanilla_index = f"""import http from 'node:http';
+    vanilla_provider = f"""import http from 'node:http';
 import 'dotenv/config';
 import {{ routes }} from './routes/StartRoute.js';
 
@@ -61,7 +61,7 @@ server.listen(PORT, () => {{
     console.log(`http://localhost:${{PORT}}`);
 }});"""
 
-    vanilla_route = f"""import {{ Start }} from '../controllers/StartController.js';
+    vanilla_router = f"""import {{ Start }} from '../controllers/StartController.js';
 
 export var routes = {{ '/': Start }};"""
 
@@ -72,7 +72,7 @@ export var routes = {{ '/': Start }};"""
 }};"""
 
     # Express
-    express_index = f"""import express from 'express';
+    express_provider = f"""import express from 'express';
 import 'dotenv/config';
 import router from './routes/StartRoute.js';
 
@@ -82,8 +82,8 @@ var app = express();
 app.use('/', router);
 app.listen(PORT, () => console.log(`http://localhost:${{PORT}}`));"""
     
-    express_route = f"""import {{ Router }} from 'express';
-import {{ Start }} from '../controllers/StartController.js';
+    express_router = f"""import {{ Router }} from 'express';
+import {{ Start }} from '../controllers/Controller.js';
 
 var router = Router();
 router.get('/', Start);
@@ -93,31 +93,34 @@ export default router;"""
     express_controller = f"""export var Start = (req, res) => res.json('{project_name}');"""
 
     # Fastify
-    fastify_index = f"""import Fastify from 'fastify';
+    fastify_provider = f"""import Fastify from 'fastify';
 import 'dotenv/config';
-import router from './routes/StartRoute.js';
+import Router from './src/Router.js';
 
 var PORT = Number(process.env.PORT) || 3000;
 var app = Fastify();
 
-app.register(router);
+app.register(Router);
+
 app.listen({{ port: PORT }}, () => console.log(`http://localhost:${{PORT}}`));"""
 
-    fastify_route = f"""import {{ Start }} from '../controllers/StartController.js';
+    fastify_router = f"""import {{ Start }} from './controllers/Controller.js';
 
-export default async function (app) {{
-
+var Router = function (app, options, done) {{
     app.get('/', Start);
-}};"""
+
+    done()
+}};
+
+export default Router;"""
 
     fastify_controller = f"""export var Start = async (req, reply) => {{
-    
-    reply.type('application/json'); 
-    return JSON.stringify('123')
+
+    return {{ project_name: "{project_name}" }}; 
 }};"""
-    
+
     # Hono
-    hono_index = f"""import {{ Hono }} from 'hono';
+    hono_provider = f"""import {{ Hono }} from 'hono';
 import {{ serve }} from '@hono/node-server';
 import 'dotenv/config';
 import router from './routes/StartRoute.js';
@@ -128,7 +131,7 @@ var app = new Hono();
 app.route('/', router);
 serve({{ fetch: app.fetch, port: PORT }}, () => console.log(`http://localhost:${{PORT}}`));"""
 
-    hono_route = f"""import {{ Hono }} from 'hono';
+    hono_router = f"""import {{ Hono }} from 'hono';
 import {{ Start }} from '../controllers/StartController.js';
 
 var router = new Hono();
@@ -143,9 +146,9 @@ export default router;"""
     "name": "{project_name}",
     "version": "1.0.0",
     "description": "",
-    "main": "index.js",
+    "main": "Provider.js",
     "scripts": {{
-        "dev": "node --watch index.js"
+        "dev": "node --watch Provider.js"
     }},
     "dependencies": {{
         "dotenv": "^16.4.7"{dependcies} 
@@ -164,39 +167,39 @@ API_KEY=''"""
         
         case "q":
 
-            index_js = vanilla_index
-            route_js = vanilla_route
+            provider_js = vanilla_provider
+            router_js = vanilla_router
             controller_js = vanilla_controller
 
         case "w":
 
-            index_js = express_index
-            route_js = express_route
+            provider_js = express_provider
+            router_js = express_router
             controller_js = express_controller
 
         case "e":
 
-            index_js = fastify_index
-            route_js = fastify_route
+            provider_js = fastify_provider
+            router_js = fastify_router
             controller_js = fastify_controller
 
         case "r":
 
-            index_js = hono_index
-            route_js = hono_route
+            provider_js = hono_provider
+            router_js = hono_router
             controller_js = hono_controller
 
         case _:
-            index_js = vanilla_index
-            route_js = vanilla_route
+            provider_js = vanilla_provider
+            router_js = vanilla_router
             controller_js = vanilla_controller
 
-    bash.run("mkdir -p routes controllers", shell=True, cwd=project_path)
+    bash.run("mkdir -p src/controllers", shell=True, cwd=project_path)
 
     files = {
-        "index.js": index_js,
-        "routes/StartRoute.js": route_js,
-        "controllers/StartController.js": controller_js,
+        "Provider.js": provider_js,
+        "src/Router.js": router_js,
+        "src/controllers/Controller.js": controller_js,
         "package.json": package_json,
         ".env": env,
         '.gitignore': git_ignore

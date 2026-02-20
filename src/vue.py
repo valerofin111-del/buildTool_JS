@@ -28,4 +28,4 @@ def vue_build(component_name : str):
     }
 
     build_files(files, component_path)
-    print(style(f'"{component_name}" created!', color=Style.GREEN , bg=''))
+    print(style(f'"{component_name}" created at {component_path}/{component_name}.vue', color=Style.GREEN , bg=''))
